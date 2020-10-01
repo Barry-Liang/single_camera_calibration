@@ -1,21 +1,11 @@
-#include <xiApiPlusOcv.hpp>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <ctime>
-#include <cstdio>
-#include <opencv2/core.hpp>
-#include <opencv2/core/utility.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/calib3d.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/videoio.hpp>
-#include <opencv2/highgui.hpp>
+#include "stdafx.h"
+#include "XIMEA.h"
 
 using namespace cv;
 using namespace std;
 bool iscamera = false;
 bool camopened = false;
+
 static void help()
 {
     cout <<  "This is a camera calibration sample." << endl
@@ -23,6 +13,7 @@ static void help()
          <<  "Near the sample file you'll find the configuration file, which has detailed help of "
              "how to edit it.  It may be any OpenCV supported file format XML/YAML." << endl;
 }
+
 class Settings
 {
 public:
@@ -54,7 +45,7 @@ public:
            << "}";
     }
     void read(const FileNode& node)                          //Read serialization for this class
-    {
+    {   node["isRGB" ] >> isRGB;
         node["BoardSize_Width" ] >> boardSize.width;
         node["BoardSize_Height"] >> boardSize.height;
         node["Calibrate_Pattern"] >> patternToUse;
@@ -158,6 +149,7 @@ public:
         atImageList = 0;
 
     }
+
     Mat nextImage()
     {
         Mat result;
@@ -213,6 +205,7 @@ public:
     bool fixK3;                  // fix K3 distortion coefficient
     bool fixK4;                  // fix K4 distortion coefficient
     bool fixK5;                  // fix K5 distortion coefficient
+    bool isRGB;                  //RGB camera or Gray camera
 
     int cameraID;
     vector<string> imageList;
@@ -247,7 +240,8 @@ int main(int argc, char* argv[])
 
     //! [file_read]
     Settings s;
-    const string inputSettingsFile = argc > 1 ? argv[1] : "default.xml";
+    //const string inputSettingsFile = argc > 1 ? argv[1] : "default.xml";
+    const string inputSettingsFile="/home/liangxiao/XIMEA/package/samples/xiAPIplusOpenCV/singleCalibrate/in_VID5.xml";
     FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
     if (!fs.isOpened())
     {
@@ -280,18 +274,22 @@ int main(int argc, char* argv[])
     {
         // Sample for XIMEA OpenCV
         xiAPIplusCameraOcv cam;
-
         // Retrieving a handle to the camera device
         printf("Opening first camera...\n");
         cam.OpenFirst();
-
         // Set exposure
         cam.SetExposureTime(10000); //10000 us = 10 ms
         // Note: The default parameters of each camera might be different in different API versions
-
         printf("Starting acquisition...\n");
         cam.StartAcquisition();
-        XI_IMG_FORMAT format = cam.GetImageDataFormat();
+        XI_IMG_FORMAT format= cam.GetImageDataFormat();
+        if(s.isRGB)
+            format = XI_RGB24;
+        cam.SetImageDataFormat(format);
+// or you can use the Ximea single camera class to initiate a camera
+//        int width=0,height=0,framerate=1000,expTime_us=10000;
+//        char* serialNumber="1234125";
+//        Ximea cam(width, height, framerate, serialNumber, expTime_us, s.isRGB);
         camopened = true;
         for(;;)
         {
@@ -354,7 +352,8 @@ int main(int argc, char* argv[])
                 if( s.calibrationPattern == Settings::CHESSBOARD)
                 {
                     Mat viewGray=view;
-                   // cvtColor(view, viewGray, COLOR_BGR2GRAY);
+                    if (s.isRGB)
+                    cvtColor(view, viewGray, COLOR_BGR2GRAY);
                     cornerSubPix( viewGray, pointBuf, Size(11,11),
                                   Size(-1,-1), TermCriteria( TermCriteria::EPS+TermCriteria::COUNT, 30, 0.1 ));
                 }
@@ -478,14 +477,8 @@ int main(int argc, char* argv[])
         cvWaitKey(2000);
         return -1;
     }
-
-
-
-
     //! [get_input]
-
     //! [show_results]
-
     return 0;
 }
 
@@ -547,6 +540,7 @@ static void calcBoardCornerPositions(Size boardSize, float squareSize, vector<Po
             break;
     }
 }
+
 //! [board_corners]
 static bool runCalibration( Settings& s, Size& imageSize, Mat& cameraMatrix, Mat& distCoeffs,
                             vector<vector<Point2f> > imagePoints, vector<Mat>& rvecs, vector<Mat>& tvecs,

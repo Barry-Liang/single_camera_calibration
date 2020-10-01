@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <opencv_storage>
 <Settings>
+  <isRGB>0</isRGB>
   <!-- Number of inner corners per a item row and column. (square, circle) -->
   <BoardSize_Width> 4</BoardSize_Width>
   <BoardSize_Height>11</BoardSize_Height>

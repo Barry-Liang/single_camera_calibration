@@ -8,6 +8,9 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 list(APPEND SOURCES
         main.cpp
         ../../_libs/xiAPIplusOpenCV/xiApiPlusOcv
+        XIMEA.h
+        XIMEA.cpp
+        stdafx.h
         )
 
 include(../../_libs/_cmake/add_xiapi.cmake)

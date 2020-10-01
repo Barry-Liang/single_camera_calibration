@@ -1,0 +1,3 @@
+/home/liangxiao/XIMEA/package/samples/xiAPIplusOpenCV/singleCalibrate/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/liangxiao/XIMEA/package/samples/xiAPIplusOpenCV/singleCalibrate/cmake-build-debug/CMakeFiles/singleCalibrate.dir
+/home/liangxiao/XIMEA/package/samples/xiAPIplusOpenCV/singleCalibrate/cmake-build-debug/CMakeFiles/edit_cache.dir
